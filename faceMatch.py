@@ -24,7 +24,6 @@ def getWebcam():
         locations = face_recognition.face_locations(lowFiFrame)
         feats = face_recognition.face_landmarks(lowFiFrame)
 
-        tagFaces(frame,locations)
         featureSwap(frame, feats, "left_eye", "right_eye")
 
         cv2.imshow('frame', frame)
@@ -33,13 +32,6 @@ def getWebcam():
 
     webcam.release()
     cv2.destroyAllWindows()
-
-
-#Draws red box around faces it sees
-def tagFaces(frame, locations):
-    for spot in locations:
-        tL, bR = getCorners(spot, 4)
-        cv2.rectangle(frame, tL, bR, (0, 0, 255), 3)
 
 def featureSwap(frame, feats, feat1, feat2):
     if len(feats) == 0:
@@ -64,20 +56,24 @@ def maxAndMin(featCoords):
     return [min(listX)-adj,min(listY)-adj,max(listX)+adj,max(listY)+adj]
 
 def eye_bounding_box(frame, eye1, eye2):
-    # Coords in the eyes go minx, miny, maxx, maxy
     try:
         for x in range((eye1[2]-eye1[0]) * 4):
             for y in range((eye1[3]-eye1[1]) * 4):
+                # firstEye = copy.copy(frame[eye2[1]*4 + y][eye2[0]*4 + x])
+                # frame[eye2[1]*4 + y][eye2[0]*4 + x] = frame[eye1[1]*4+y][eye1[0]*4+x]
+                # frame[eye1[1]*4 + y][eye1[0]*4 + x] = firstEye
                 frame[eye2[1]*4 + y][eye2[0]*4 + x] = 0
                 frame[eye1[1]*4 + y][eye1[0]*4 + x] = 0
 
     except:
         pass
-    
+
+
 def getCorners(fL,n):
     tL = (fL[3]*n, fL[0]*n)
     bR = (fL[1]*n, fL[2]*n)
     return tL, bR
+
 
 if __name__ == "__main__":
     getWebcam()
