@@ -5,15 +5,8 @@ import copy
 from PIL import Image
 from PIL import ImageDraw
 #feats:
-#right_eyebrow
-#left_eyebrow
-#top_lip
-#bottom_lip
-#nose_tip
-#chin
-#nose_bridge
-
-
+#right_eyebrow, left_eyebrow, top_lip, bottom_lip, nose_tip
+#chin, nose_bridge
 
 def getWebcam():
     webcam = cv2.VideoCapture(0)
