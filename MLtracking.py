@@ -28,8 +28,6 @@ class eightdeep(torch.nn.Module):
         self.fc2 = nn.Linear(200, 20)
         self.fc3 = nn.Linear(20, 1)
 
-
-
     def forward(self,x):
         x = self.layer2(x)
         x = x.reshape(x.size(0), -1)
@@ -95,11 +93,7 @@ class sixnine(torch.nn.Module):
         x = self.fc2(x);
         x = self.fc3(x);
         x = self.fc4(x);
-
-
         return x
-
-
 
 def maxAndMin(featCoords,mult = 1):
     adj = 10/mult
@@ -109,7 +103,6 @@ def maxAndMin(featCoords,mult = 1):
         listX.append(tup[0])
         listY.append(tup[1])
     maxminList = np.array([min(listX)-adj,min(listY)-adj,max(listX)+adj,max(listY)+adj])
-    # print(maxminList)
     return (maxminList*mult).astype(int), (np.array([sum(listX)/len(listX)-maxminList[0], sum(listY)/len(listY)-maxminList[1]])*mult).astype(int)
 
 
@@ -130,11 +123,11 @@ def process(im):
 def eyetrack(xshift = 30, yshift=150, frameShrink = 0.15):
     # X classifiers
     sixn = sixnine().to(device)
-    sixn.load_state_dict(torch.load("xModels/69good.plt",map_location=device))
+    sixn.load_state_dict(torch.load("xModels/69good.plt", map_location=device))
     sixn.eval()
 
     sevent = venty().to(device)
-    sevent.load_state_dict(torch.load("xModels/70test.plt",map_location=device))
+    sevent.load_state_dict(torch.load("xModels/70test.plt", map_location=device))
     sevent.eval()
 
     def ensembleX(im):  # 58 accuracy
@@ -154,12 +147,11 @@ def eyetrack(xshift = 30, yshift=150, frameShrink = 0.15):
 
 
     webcam = cv.VideoCapture(0)
-    mvAvgx = []
-    mvAvgy = []
-    scale = 10
-    margin = 200
-    margin2 = 50
-
+    mvAvgx = [0]
+    mvAvgy = [0]
+    scale = 100
+    samx = 0
+    samy = 0
     while True:
         ret, frame = webcam.read()
         smallframe = cv.resize(copy.deepcopy(frame), (0, 0), fy=frameShrink, fx=frameShrink)
@@ -169,55 +161,24 @@ def eyetrack(xshift = 30, yshift=150, frameShrink = 0.15):
         if len(feats) > 0:
             leBds, leCenter = maxAndMin(feats[0]['left_eye'], mult=1/frameShrink)
             left_eye = frame[leBds[1]:leBds[3], leBds[0]:leBds[2]]
-
             left_eye = process(left_eye)
-
-
-            x = ensembleX(left_eye)*1440-xshift
-            y = fiv(left_eye).item()*900-yshift
-
-
-
-
-            avx = sum(mvAvgx)/scale
-            avy = sum(mvAvgy)/scale
-            print(avx,avy)
+            x = ensembleX(left_eye) * 1920 - xshift
+            y = fiv(left_eye).item() * 1080 - yshift
+            dis = ((x - mvAvgx[len(mvAvgx) - 1]) ** 2 + (y - mvAvgy[len(mvAvgy) - 1]) ** 2) ** 0.5
 
             mvAvgx.append(x)
             mvAvgy.append(y)
-
             if len(mvAvgx) >= scale:
-                if abs(avx-x) > margin and abs(avy-x)>margin:
+                if dis > 50:
                     mvAvgx = mvAvgx[5:]
                     mvAvgy = mvAvgy[5:]
+                    pyautogui.moveTo(x, y)
+
                 else:
-                    if abs(avx-x) > margin2:
-                        mvAvgx = mvAvgx[1:]
-                    else:
-                        mvAvgx.pop()
-
-                    if abs(avy-y) > margin2:
-                        mvAvgy = mvAvgy[1:]
-                    else:
-                        mvAvgy.pop()
-                # else:
-                #     mvAvgx = mvAvgx[1:]
-                #     mvAvgy = mvAvgy[1:]
-                pyautogui.moveTo(720,450)
-                pyautogui.moveTo(avx,avy)
-
-
-
-
+                    print("SDLKFJSDLKFJLKSDFLKSDJ")
+                    mvAvgy.pop()
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break
 
-
-
-
-
-
-
-
-
-# eyetrack()
+if __name__ == "__main__":
+    eyetrack()
